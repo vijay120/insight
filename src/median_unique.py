@@ -1,8 +1,8 @@
 from sets import Set
-import numpy, os, sys, array
+import os, sys, array, bisect
 
-def median(inputList):
-    inputList = sorted(inputList)
+# finds the median of a list of numbers. This is a O(1) operation
+def medianOfSortedList(inputList):
     if len(inputList) < 1:
     	return None
     if len(inputList) % 2 == 1:
@@ -20,7 +20,7 @@ absPathOfDstOfResults = os.path.join(script_dir, relativePathOfDstOfResults)
 
 # this array tracks the unique words. I use an unsigned short representation since it takes up
 # 2 bytes of space and we know that the median number of unique words per tweet will be less 
-# than 65,535
+# than 65,535.
 listTracker = array.array('H')
 
 distFile = open(absPathOfDstOfResults, 'w')
@@ -30,11 +30,13 @@ with open(absPathOfSrcOfTweets, 'r') as inputFile:
     	# set only accepts unique words
     	listOfUniqueWords = Set(line.split())
 
-    	#find and append the length of the unique words into the list tracker
-    	listTracker.append(len(listOfUniqueWords))
+        # find and append the length of the unique words into the list tracker while maintaining order
+        # insort is a O(log(n)) operation. This boosts out performance as we do not repeatedly sort
+        # the array.
+        bisect.insort(listTracker, len(listOfUniqueWords))
 
-    	#find the median value of the list tracker
-    	medianVal = median(listTracker)
+    	#find the median value of the sorted list tracker
+    	medianVal = medianOfSortedList(listTracker)
 
     	#write value to the output file
     	distFile.write(str(medianVal) + '\n')
